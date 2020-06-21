@@ -1,0 +1,17 @@
+LIBRARY NankaiWiperAir
+
+EXPORTS
+	GetPluginVersion
+	SetVehicleSpec
+	Initialize
+	Elapse
+	SetPower
+	SetBrake
+	SetReverser
+	KeyDown
+	KeyUp
+	HornBlow
+	DoorOpen
+	DoorClose
+	SetSignal
+	SetBeaconData
