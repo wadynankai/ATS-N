@@ -93,9 +93,9 @@ ATS_API ATS_HANDLES WINAPI Elapse(ATS_VEHICLESTATE vs, int* panel, int* sound) {
 	panel[120] = !g_emg_brk_on;//正常
 	panel[121] = g_emg_brk_on;//非常
 
-	panel[38] = g_timer_begin;
-	panel[39] = (atsn.speed % 100) / 10;
-	panel[40] = atsn.speed % 10;
+//	panel[38] = g_timer_begin;
+//	panel[39] = (atsn.speed % 100) / 10;
+//	panel[40] = atsn.speed % 10;
 	return ret;
 }
 
