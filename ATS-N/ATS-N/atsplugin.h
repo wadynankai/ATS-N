@@ -53,17 +53,17 @@
 #define ATS_CONSTANTSPEED_DISABLE	2	// Disable
 
 // Vehicle Specification
-struct ATS_VEHICLESPEC
+typedef struct 
 {
 	int BrakeNotches;	// Number of Brake Notches
 	int PowerNotches;	// Number of Power Notches
 	int AtsNotch;		// ATS Cancel Notch
 	int B67Notch;		// 80% Brake (67 degree)
 	int Cars;			// Number of Cars
-};
+}ATS_VEHICLESPEC;
 
 // State Quantity of Vehicle
-struct ATS_VEHICLESTATE
+typedef struct
 {
 	double Location;	// Train Position (Z-axis) (m)
 	float Speed;		// Train Speed (km/h)
@@ -74,25 +74,25 @@ struct ATS_VEHICLESTATE
 	float BpPressure;	// Pressure of BP (Pa)
 	float SapPressure;	// Pressure of SAP (Pa)
 	float Current;		// Current (A)
-};
+} ATS_VEHICLESTATE;
 
 // Received Data from Beacon
-struct ATS_BEACONDATA
+typedef struct
 {
 	int Type;		// Type of Beacon
 	int Signal;		// Signal of Connected Section
 	float Distance;	// Distance to Connected Section (m)
 	int Optional;	// Optional Data
-};
+}ATS_BEACONDATA;
 
 // Train Operation Instruction
-struct ATS_HANDLES
+typedef struct 
 {
 	int Brake;		// Brake Notch
 	int Power;		// Power Notch
 	int Reverser;	// Reverser Position
 	int ConstantSpeed;		// Constant Speed Control
-};
+}ATS_HANDLES;
 
 // Called when this plug-in is loaded
 ATS_API void WINAPI Load(void);

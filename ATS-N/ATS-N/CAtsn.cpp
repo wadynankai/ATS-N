@@ -36,7 +36,7 @@ bool CAtsn::PassSecondBeacon(double location, int time)
 		}
 		i++;
 	}
-	speed = m_speedlist[n];
+	speed = m_speedlist.at(n);
 
-	return (aveSpeed > m_speedlist[n]);//‘¬“x’´‰ß‚Ì‚Æ‚«‚Étrue
+	return (aveSpeed > m_speedlist.at(n));//‘¬“x’´‰ß‚Ì‚Æ‚«‚Étrue
 }

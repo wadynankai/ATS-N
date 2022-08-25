@@ -1,5 +1,25 @@
-#pragma once
-#include "CAtsn.h"
+#ifndef _ATSN_INCLUDED_
+#define _ATSN_INCLUDED_
+
+#ifndef _WIN32_WINNT
+#include <winsdkver.h>
+#define _WIN32_WINNT _WIN32_WINNT_WIN10
+//#define _WIN32_WINNT _WIN32_WINNT_WINBLUE
+//#define _WIN32_WINNT _WIN32_WINNT_WIN8
+//#define _WIN32_WINNT _WIN32_WINNT_WIN7
+#endif //_WIN32_WINNT
+#ifndef WIN32_LEAN_AND_MEAN
+#define WIN32_LEAN_AND_MEAN             // Windows ヘッダーからほとんど使用されていない部分を除外する
+#endif
+#ifndef NOMINMAX
+#define NOMINMAX
+#endif
+#include <Windows.h>
+#include <stdlib.h>
+#include <stdbool.h>
+#include <math.h>
+#include <float.h>
+#include "atsplugin.h"
 //beaconのtype(ATS_BEACONDATA.Type)
 #define ATSN_BEACON 7//ATS-N(2点間タイマー方式)
 //beaconのdata(ATS_BEACONDATA.Optional)
@@ -32,4 +52,15 @@ int g_framecount;//地上子を踏んでからのフレームを数える(駅ジャンプ対策)
 bool g_reset;//リセットボタンを押した瞬間
 bool g_reset_push;//リセットボタンを押している間true（連打を防ぐため）
 bool g_reset_release;//リセットボタンを離した瞬間
-CAtsn atsn;
+
+double g_location1 = 0.0;//一個目の地上子の位置
+double g_location2 = 0.0;//二個目の地上子の位置
+int g_time1 = 0;//一個目の地上子を通過した時刻
+int g_time2 = 0;//二個目の地上子を通過した時刻
+int g_speedlist[] = { 5,10,15,20,25,30,35,40,50,55,60,65,70,75,80 };
+
+void PassFirstBeacon(double location, int time);
+bool PassSecondBeacon(double location, int time);
+int g_speed = 0;
+
+#endif //!_ATSN_INCLUDED_
