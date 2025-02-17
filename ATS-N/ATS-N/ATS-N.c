@@ -2,7 +2,13 @@
 
 // Called when this plug-in is loaded
 ATS_API void WINAPI Load(void) {
-
+	g_atsPower = true;
+	g_nfb_push = false;
+	g_nfb_on = false;
+	g_nfb_off = false;
+	g_reset = false;
+	g_reset_push = false;
+	g_reset_release = false;
 }
 
 // Called when this plug-in is unloaded
@@ -53,11 +59,11 @@ ATS_API ATS_HANDLES WINAPI Elapse(ATS_VEHICLESTATE vs, int* panel, int* sound) {
 	{
 		ret.Brake = g_emrbrake;
 	}
-	if (g_pilotlamp)ret.Reverser = g_reverser;
-	else ret.Reverser = 0;
+	ret.Reverser = g_reverser;
 	if (g_reset)//リセットボタンを押したとき
 	{
 		sound[24] = ATS_SOUND_PLAY;
+		sound[25] = ATS_SOUND_STOP;
 		g_reset = false;
 	}
 	else if (g_reset_release)//リセットボタンを離したとき
@@ -71,8 +77,35 @@ ATS_API ATS_HANDLES WINAPI Elapse(ATS_VEHICLESTATE vs, int* panel, int* sound) {
 		sound[24] = ATS_SOUND_CONTINUE;
 		sound[25] = ATS_SOUND_CONTINUE;
 	}
-	panel[120] = !g_emg_brk_on;//正常
-	panel[121] = g_emg_brk_on;//非常
+
+	if (g_nfb_on)//ATS電源を入れた時
+	{
+		sound[37] = ATS_SOUND_PLAY;
+		sound[38] = ATS_SOUND_STOP;
+		g_nfb_on = false;
+	}
+	else if (g_nfb_off)
+	{
+		sound[37] = ATS_SOUND_STOP;
+		sound[38] = ATS_SOUND_PLAY;
+		g_nfb_off = false;
+	}
+	else
+	{
+		sound[37] = ATS_SOUND_CONTINUE;
+		sound[38] = ATS_SOUND_CONTINUE;
+	}
+	
+	if (g_atsPower)
+	{
+		panel[120] = !g_emg_brk_on;//正常
+		panel[121] = g_emg_brk_on;//非常
+	}
+	else
+	{
+		panel[120] = 0;//消灯
+		panel[121] = 0;//消灯
+	}
 
 //	panel[38] = g_timer_begin;
 //	panel[39] = (atsn.speed % 100) / 10;
@@ -100,13 +133,26 @@ ATS_API void WINAPI KeyDown(int key) {
 	switch (key)
 	{
 	case ATS_KEY_B2:
-		if (GetKeyState(VK_SHIFT) & 0x80)g_emg_brk_on = true;//テスト機能
-		else if (!g_reset_push)
+		if (!g_reset_push && !g_nfb_push)
 		{
-			g_reset_push = true;
-			g_emg_brk_on = false;
-			g_timercount = false;
-			g_reset = true;
+			if ((GetKeyState(VK_SHIFT) & 0x80) && !(GetKeyState(VK_CONTROL) & 0x80))//Shiftを押しているとき
+			{
+				g_nfb_push = true;
+				g_atsPower = !g_atsPower;
+				if (g_atsPower)
+				{
+					g_emg_brk_on = true;//電源が「入」の時は非常に入る
+					g_nfb_on = true;
+				}
+				else g_nfb_off = true;
+			}
+			else if (!(GetKeyState(VK_SHIFT) & 0x80) && !(GetKeyState(VK_CONTROL) & 0x80))//Shiftを押していないとき
+			{
+				g_reset_push = true;
+				g_emg_brk_on = false;
+				g_timercount = false;
+				g_reset = true;
+			}
 		}
 		break;
 	}
@@ -122,6 +168,7 @@ ATS_API void WINAPI KeyUp(int key) {
 			g_reset_push = false;
 			g_reset_release = true;
 		}
+		if (g_nfb_push)g_nfb_push = false;
 		break;
 	}
 }
@@ -133,12 +180,10 @@ ATS_API void WINAPI HornBlow(int type) {
 
 // Called when the door is opened
 ATS_API void WINAPI DoorOpen(void) {
-	g_pilotlamp = false;
 }
 
 // Called when the door is closed
 ATS_API void WINAPI DoorClose(void) {
-	g_pilotlamp = true;
 }
 
 // Called when current signal is changed
@@ -148,27 +193,29 @@ ATS_API void WINAPI SetSignal(int signal) {
 
 // Called when the beacon data is received
 ATS_API void WINAPI SetBeaconData(ATS_BEACONDATA data) {
-	switch (data.Type)
+	if (g_atsPower)
 	{
-	case ATSN_BEACON:
-		if (data.Optional == BEACON_FREE || (data.Optional == BEACON_R && data.Signal == SIGNAL_R) || (data.Optional == BEACON_YY && data.Signal == SIGNAL_YY) || (data.Optional == BEACON_Y && data.Signal == SIGNAL_Y) || (data.Optional == BEACON_YG && data.Signal == SIGNAL_YG))
+		switch (data.Type)
 		{
-			if (!g_timer_begin)//一個目の地上子を通過
+		case ATSN_BEACON:
+			if (data.Optional == BEACON_FREE || (data.Optional == BEACON_R && data.Signal == SIGNAL_R) || (data.Optional == BEACON_YY && data.Signal == SIGNAL_YY) || (data.Optional == BEACON_Y && data.Signal == SIGNAL_Y) || (data.Optional == BEACON_YG && data.Signal == SIGNAL_YG))
 			{
-				g_timercount = 0;
-				g_framecount = 0;
-				PassFirstBeacon(g_location, g_time);
-				g_timer_begin = true;
+				if (!g_timer_begin)//一個目の地上子を通過
+				{
+					g_timercount = 0;
+					g_framecount = 0;
+					PassFirstBeacon(g_location, g_time);
+					g_timer_begin = true;
+				}
+				else if (g_timercount < 600 && g_framecount && PassSecondBeacon(g_location, g_time))g_emg_brk_on = true;//二個目の地上子を通過
 			}
-			else if (g_timercount < 600 && g_framecount && PassSecondBeacon(g_location, g_time))g_emg_brk_on = true;//二個目の地上子を通過
+			else if (data.Optional == BEACON_STOP || (data.Optional == BEACON_R1 && data.Signal == SIGNAL_R))
+			{
+				g_emg_brk_on = true;
+			}
+			break;
 		}
-		else if (data.Optional == BEACON_STOP || (data.Optional == BEACON_R1 && data.Signal == SIGNAL_R))
-		{
-			g_emg_brk_on = true;
-		}
-		break;
 	}
-
 }
 
 void PassFirstBeacon(double location, int time)

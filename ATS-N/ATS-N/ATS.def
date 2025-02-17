@@ -1,6 +1,8 @@
 ;LIBRARY ATS-N
 
 EXPORTS
+	Load
+	Dispose
 	GetPluginVersion
 	SetVehicleSpec
 	Initialize

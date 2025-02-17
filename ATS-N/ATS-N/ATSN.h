@@ -38,6 +38,11 @@
 #define SIGNAL_YG 3//減速
 #define SIGNAL_G 4//進行
 
+bool g_atsPower;//ATS電源
+bool g_nfb_push;//Shift+End押している間true（連打を防ぐため）
+bool g_nfb_on;//ATS電源をONにした瞬間
+bool g_nfb_off;//ATS電源をOFFにした瞬間
+
 int g_power;//マスコンの位置
 int g_brakehandle;//ブレーキハンドルの位置
 int g_reverser;//レバーサーの位置
@@ -47,7 +52,6 @@ double g_location;//現在の位置
 bool g_timer_begin;//trueのとき地上子を踏むと非常（カウントアップ中）
 bool g_emg_brk_on;//trueのとき非常ブレーキ
 int g_timercount;//タイマー(500まで)
-bool g_pilotlamp;//戸閉灯
 int g_framecount;//地上子を踏んでからのフレームを数える(駅ジャンプ対策)
 bool g_reset;//リセットボタンを押した瞬間
 bool g_reset_push;//リセットボタンを押している間true（連打を防ぐため）
